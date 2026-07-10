@@ -171,6 +171,12 @@
   <data name="menu.cli" xml:space="preserve">
     <value>CLI Terminal</value>
   </data>
+  <data name="cli.unsupported" xml:space="preserve">
+    <value>The CLI terminal is not supported on this operating system.</value>
+  </data>
+  <data name="cli.launchFailed" xml:space="preserve">
+    <value>Failed to open the CLI terminal.</value>
+  </data>
   <data name="menu.detail" xml:space="preserve">
     <value>Details</value>
   </data>
@@ -655,7 +661,7 @@
     <value>Could not start the update process</value>
   </data>
   <data name="update.ready" xml:space="preserve">
-    <value>Ready to check the internal update channel</value>
+    <value>Ready to check GitHub Releases</value>
   </data>
   <data name="update.source" xml:space="preserve">
     <value>Update Source</value>
@@ -664,13 +670,13 @@
     <value>Package Key</value>
   </data>
   <data name="update.norelease" xml:space="preserve">
-    <value>No build has been uploaded for this channel yet</value>
+    <value>No GitHub Release has been published yet</value>
   </data>
   <data name="update.network" xml:space="preserve">
-    <value>Could not reach the internal update server</value>
+    <value>Could not reach GitHub Releases</value>
   </data>
   <data name="update.ratelimited" xml:space="preserve">
-    <value>The update server rejected the request</value>
+    <value>GitHub rejected the update request</value>
   </data>
   <data name="update.invalid" xml:space="preserve">
     <value>The update metadata is incomplete</value>
@@ -709,4 +715,3 @@
     <value>Failed to load {0}</value>
   </data>
 </root>
-
