@@ -2,6 +2,7 @@ using AndroidTreeView.Adb.Services;
 using AndroidTreeView.Core.Interfaces;
 using AndroidTreeView.Core.Options;
 using AndroidTreeView.Core.Services;
+using AndroidTreeView.Infrastructure.Rooting;
 using AndroidTreeView.Infrastructure.Settings;
 using AndroidTreeView.Infrastructure.Update;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,17 +31,24 @@ public static class AndroidTreeViewSharedServices
 
         services.TryAddSingleton<IAdbEnvironment, AdbEnvironment>();
         services.TryAddSingleton<IAdbLocator, AdbLocator>();
+        services.TryAddSingleton<IExternalCommandRunner, ExternalCommandRunner>();
         services.TryAddSingleton<IAdbCommandExecutor, AdbCommandExecutor>();
         services.TryAddSingleton<IDeviceService, AdbDeviceService>();
         services.TryAddSingleton<ILogcatService, LogcatService>();
         services.TryAddSingleton<IDeviceMonitor, DeviceMonitor>();
         services.TryAddSingleton<IDeviceActionsService, AdbDeviceActionsService>();
         services.TryAddSingleton<IFastbootService, FastbootService>();
+        services.TryAddSingleton<RootToolPaths>();
+        services.TryAddSingleton<IBootImageExtractor, BootImageExtractor>();
+        services.TryAddSingleton<IBootBackupService, BootBackupService>();
+        services.TryAddSingleton<IMagiskPatcher, MagiskPatcher>();
+        services.TryAddSingleton<IRootFastbootService, RootFastbootService>();
+        services.TryAddSingleton<IRootWizardService, RootWizardService>();
         services.TryAddSingleton<IScreenCaptureService, ScreenCaptureService>();
         services.TryAddSingleton<DeviceFileTransferService>();
         services.TryAddSingleton<IScrcpyLauncher, ScrcpyLauncher>();
         services.TryAddSingleton<ISettingsService, SettingsService>();
-        services.TryAddSingleton<IUpdateService, NekoIndexUpdateService>();
+        services.TryAddSingleton<IUpdateService, GitHubUpdateService>();
         services.TryAddSingleton<IUpdateInstaller, UpdateInstaller>();
 
         return services;

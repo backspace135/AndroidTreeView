@@ -2,7 +2,7 @@
 
 Repository: `Birditch/AndroidTreeView`.
 
-Current product version: `1.0.5`.
+Current product version: `1.0.7`.
 
 ## Release Policy
 
@@ -14,6 +14,8 @@ Each Windows ZIP must contain:
 
 - published application files
 - platform-matched `scrcpy`/`adb`
+- full App only: `fastboot`, verified Magisk APK, and payload-dumper-go under `root-tools/`
+- Mini: no `root-tools/` entries
 - `release.json`
 - the product executable named by `release.json`
 
@@ -37,27 +39,32 @@ Keep these values identical for every release:
 - `src/AndroidTreeView.App/app.manifest` -> `assemblyIdentity version`
 - `packaging/build-update-zip.ps1` -> default `Version`
 
-For `1.0.5`, release artifacts are named:
+For `1.0.7`, release artifacts are named:
 
 ```text
-AndroidTreeView-1.0.5-win-x64.zip
-AndroidTreeView-1.0.5-win-x64.zip.sha256
-AndroidTreeView-1.0.5-osx-arm64.zip
-AndroidTreeView-1.0.5-osx-arm64.zip.sha256
-AndroidTreeView-Mini-1.0.5-win-x64.zip
-AndroidTreeView-Mini-1.0.5-win-x64.zip.sha256
-AndroidTreeView-Mini-1.0.5-osx-arm64.zip
-AndroidTreeView-Mini-1.0.5-osx-arm64.zip.sha256
+AndroidTreeView-1.0.7-win-x64.zip
+AndroidTreeView-1.0.7-win-x64.zip.sha256
+AndroidTreeView-1.0.7-osx-arm64.zip
+AndroidTreeView-1.0.7-osx-arm64.zip.sha256
+AndroidTreeView-Mini-1.0.7-win-x64.zip
+AndroidTreeView-Mini-1.0.7-win-x64.zip.sha256
+AndroidTreeView-Mini-1.0.7-osx-arm64.zip
+AndroidTreeView-Mini-1.0.7-osx-arm64.zip.sha256
 ```
 
 ## Build Upload ZIP Packages
 
 Official publication happens through the `Publish` GitHub Actions workflow:
 
-- push a tag named `v<major>.<minor>.<patch>`, for example `v1.0.5`
+- push a tag named `v<major>.<minor>.<patch>`, for example `v1.0.7`
 - or run `workflow_dispatch` and provide the same version string
 
-The workflow validates on Windows, verifies the pinned scrcpy release against the latest upstream release, builds the two Windows portable ZIPs and two macOS `.app` bundle ZIPs, writes SHA-256 sidecars, uploads workflow artifacts, and creates the GitHub Release.
+The workflow validates on Windows, verifies the pinned scrcpy and Root-tool releases, builds the two Windows
+portable ZIPs and two macOS `.app` bundle ZIPs, checks Root-tool package isolation and macOS executable bits,
+writes SHA-256 sidecars, uploads workflow artifacts, and creates the GitHub Release.
+
+The packaged `fastboot` binary is pinned to Android SDK Platform-Tools 37.0.0 and verified against the
+repository-maintained archive and executable SHA-256 values. Do not switch back to a `latest` URL.
 
 For local validation only:
 
@@ -75,52 +82,19 @@ The full app and Mini share the same update implementation but use different app
 - Full app: `AppInfo.AppUpdateKey` -> `android-tree-view-app`
 - Mini: `AppInfo.MiniUpdateKey` -> `android-tree-view-mini`
 
-The Windows update channel must point each product key at its own Windows ZIP:
+Each product resolves its own Windows ZIP from the latest GitHub Release:
 
-- `android-tree-view-app` -> `AndroidTreeView-1.0.5-win-x64.zip`
-- `android-tree-view-mini` -> `AndroidTreeView-Mini-1.0.5-win-x64.zip`
+- `android-tree-view-app` -> `AndroidTreeView-1.0.7-win-x64.zip`
+- `android-tree-view-mini` -> `AndroidTreeView-Mini-1.0.7-win-x64.zip`
 
-`NekoIndexUpdateService` queries the configured internal update API and compares the returned version with `AppInfo.Version`. `UpdateInstaller` downloads the package, verifies SHA-256 metadata when present, extracts the ZIP, verifies the portable Windows x64 manifest, and starts the automated update script.
+`GitHubUpdateService` queries `AppInfo.LatestReleaseApiUrl`, compares the release tag with `AppInfo.Version`, and resolves the matching ZIP and `.sha256` assets. `UpdateInstaller` downloads the package, verifies SHA-256 metadata when present, extracts the ZIP, verifies the portable Windows x64 manifest, and starts the automated update script.
 
-The internal update API endpoint is:
+## GitHub Release Update Deployment
 
-```text
-GET http://192.168.89.71:14000/api/update/{appKey}/latest
-Accept: application/json
-```
-
-Minimum response contract:
-
-```json
-{
-  "ok": true,
-  "data": {
-    "appKey": "android-tree-view-app",
-    "title": "AndroidTreeView",
-    "version": "1.0.5",
-    "zip": {
-      "sha256": "<64-character sha256>",
-      "downloadUrl": "/api/resources/android-tree-view-app/versions/latest/archive"
-    },
-    "files": []
-  },
-  "error": null
-}
-```
-
-`downloadUrl` may be absolute or relative to `AppInfo.UpdateServerBaseUrl`. The updater requires the response `appKey` to match the configured product channel and the package `release.json` to match the same `appKey`, version, Windows x64 architecture, and executable.
-
-## Internal Update Deployment
-
-Use this flow for the intranet update server:
-
-1. Push a `v1.0.5` tag or run the `Publish` GitHub Actions workflow manually.
-2. Download the GitHub Actions-built Windows ZIP and `.sha256` sidecar for each Windows update channel.
-3. Upload the ZIPs to the internal server storage.
-4. Configure `/api/update/android-tree-view-app/latest` to return `AndroidTreeView-1.0.5-win-x64.zip` metadata.
-5. Configure `/api/update/android-tree-view-mini/latest` to return `AndroidTreeView-Mini-1.0.5-win-x64.zip` metadata.
-6. Confirm the `sha256` value matches the uploaded ZIP.
-7. Use the app "Check for updates" action to test download, validation, replacement, cleanup, and restart.
+1. Push a `v<version>` tag or run the `Publish` GitHub Actions workflow manually.
+2. Confirm the release contains the App and Mini ZIPs plus their `.sha256` sidecars.
+3. Confirm the release tag is a valid semantic version and matches the asset filenames.
+4. Use the app "Check for updates" action to test download, validation, replacement, cleanup, and restart.
 
 macOS Apple Silicon ZIPs are published to GitHub Releases as `.app` bundle ZIPs for distribution, but the current automated in-app updater accepts the Windows `portable-x64` package kind.
 
@@ -149,11 +123,10 @@ Preserved config-like files include `.env`, `settings.json`, `appsettings.json`,
 4. Locally smoke-test at least the Windows App/Mini packaging scripts.
 5. Push a `v<version>` tag or run the `Publish` GitHub Actions workflow manually.
 6. Confirm the workflow produced all four ZIPs and checksum sidecars.
-7. Point configured Windows update channels at the GitHub Actions-built Windows ZIPs only.
-8. Confirm each internal update API response returns the correct product key, version, download URL, and SHA-256.
-9. Confirm the full app update flow downloads, applies, removes obsolete non-config files, preserves config files, and restarts.
-10. Confirm Mini auto-update downloads, applies, removes obsolete non-config files, preserves config files, and restarts.
+7. Confirm the GitHub Release exposes the expected product ZIPs and checksum sidecars.
+8. Confirm the full app update flow downloads, applies, removes obsolete non-config files, preserves config files, and restarts.
+9. Confirm Mini auto-update downloads, applies, removes obsolete non-config files, preserves config files, and restarts.
 
 ## GitHub Releases
 
-The `Publish` workflow creates a GitHub Release for each release tag and uploads the four ZIPs plus checksum files. The in-app updater may still consume an internal NekoIndex channel, but that channel must reference artifacts built by GitHub Actions, not local builds.
+The `Publish` workflow creates a GitHub Release for each release tag and uploads the four ZIPs plus checksum files. The in-app updater reads this public release directly and selects the Windows x64 asset for the running product.

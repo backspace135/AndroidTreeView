@@ -1,15 +1,17 @@
 # AndroidTreeView
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-0E7A5F.svg)](LICENSE)
-[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com/)
-[![Avalonia 11.3](https://img.shields.io/badge/Avalonia-11.3-663399.svg)](https://avaloniaui.net/)
-[![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](#windows-使用说明)
+[![Release](https://img.shields.io/github/v/release/Birditch/AndroidTreeView?label=Release&color=0E7A5F)](https://github.com/Birditch/AndroidTreeView/releases/latest)
+[![CI](https://github.com/Birditch/AndroidTreeView/actions/workflows/ci.yml/badge.svg)](https://github.com/Birditch/AndroidTreeView/actions/workflows/ci.yml)
+[![.NET SDK](https://img.shields.io/badge/.NET-SDK-512BD4.svg)](https://dotnet.microsoft.com/)
+[![Avalonia UI](https://img.shields.io/badge/Avalonia-UI-663399.svg)](https://avaloniaui.net/)
+[![Platform: Windows + macOS](https://img.shields.io/badge/Platform-Windows%20%2B%20macOS-0078D6.svg)](#使用说明)
 
 [主文档](README.md) | **简体中文** | [English](README.en.md)
 
-AndroidTreeView 是一个用于 Android 设备巡检、测试与管理的 Windows 桌面工具。主程序负责设备总览、详情、投屏、基础工具和设置；Mini 版本保持独立运行，常驻监听设备并自动投屏。
+AndroidTreeView 是一个用于 Android 设备巡检、测试与管理的桌面工具，支持 Windows 与 macOS（Apple Silicon）。主程序负责设备总览、详情、投屏、基础工具和设置；Mini 版本保持独立运行，常驻监听设备并自动投屏。
 
-当前版本：**v1.0.5**。
+当前发布请查看上方 Release 徽章或 [GitHub Releases](https://github.com/Birditch/AndroidTreeView/releases/latest)。运行时版本、目标框架和打包配置以项目文件与发布工作流为准。
 
 ## 产品样式展示
 
@@ -36,12 +38,20 @@ dotnet run --project src/AndroidTreeView.App
 dotnet run --project src/AndroidTreeView.Mini
 ```
 
-## Windows 使用说明
+功能规划与实施文档入口见 [docs/roadmap-features.md](docs/roadmap-features.md)。
+
+## 使用说明
 
 1. 安装 Android platform-tools，或让应用在启动时引导选择 `adb.exe`。
 2. 在手机上开启开发者选项和 USB 调试。
 3. 连接手机并允许 USB 调试授权。
 4. 主程序会显示设备卡片；Mini 会自动监听并启动投屏。
+
+### macOS 说明
+
+- 从 Release 下载 `AndroidTreeView-<版本>-osx-arm64.zip`，解压后将 `AndroidTreeView.app` 拖入 `/Applications`。
+- 首次打开若被 Gatekeeper 拦截，右键「打开」，或执行 `xattr -dr com.apple.quarantine AndroidTreeView.app` 放行。
+- 设备卡片的「CLI 终端」在 macOS 上通过 Terminal.app 打开，编号菜单与 Windows 一致。
 
 ADB 安装与排错见 [docs/adb-requirements.md](docs/adb-requirements.md)。
 
@@ -61,13 +71,13 @@ ADB 安装与排错见 [docs/adb-requirements.md](docs/adb-requirements.md)。
 ./packaging/build-update-zip.ps1 -Product Mini -Rid win-x64
 ```
 
-默认产物版本是 `1.0.5`。只发布 x64 架构。验证输出包含主程序和 Mini 的上传 ZIP，例如：
+产物版本由项目文件和发布工作流统一提供。验证输出包含主程序和 Mini 的上传 ZIP，例如：
 
 ```text
-artifacts/AndroidTreeView-1.0.5-win-x64.zip
-artifacts/AndroidTreeView-1.0.5-osx-arm64.zip
-artifacts/AndroidTreeView-Mini-1.0.5-win-x64.zip
-artifacts/AndroidTreeView-Mini-1.0.5-osx-arm64.zip
+artifacts/AndroidTreeView-<版本>-win-x64.zip
+artifacts/AndroidTreeView-<版本>-osx-arm64.zip
+artifacts/AndroidTreeView-Mini-<版本>-win-x64.zip
+artifacts/AndroidTreeView-Mini-<版本>-osx-arm64.zip
 ```
 
 更多细节见 [docs/packaging.md](docs/packaging.md)。
